@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presupuesto — servicios generales</title>
+<style>
+  :root { --tinta:#16202c; --azul:#1f3864; --gris:#5b6b7f; --linea:#e3e8ef; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Segoe UI",system-ui,Arial,sans-serif; color:var(--tinta);
+         background:#eef1f5; }
+  .app { display:grid; grid-template-columns:410px 1fr; gap:18px; padding:18px; align-items:start; }
+  .panel { background:#fff; border:1px solid var(--linea); border-radius:12px; padding:16px; }
+  h2 { font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gris);
+       margin:0 0 10px; font-weight:600; }
+  label { display:block; font-size:.78rem; color:var(--gris); margin:10px 0 3px; }
+  input, textarea, select { width:100%; font:inherit; font-size:.88rem; padding:8px 10px;
+       border:1px solid #cfd8e6; border-radius:8px; background:#fff; color:var(--tinta); }
+  textarea { resize:vertical; }
+  .fila { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+  .tabla { margin-top:12px; }
+  .cabecera { font-size:.66rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gris);
+              padding:0 2px 5px; display:grid; grid-template-columns:1fr 58px; }
+  .cabecera span:last-child { text-align:right; }
+  .prod { border-bottom:1px dashed #e8edf1; padding:6px 0 8px; }
+  .prod .linea1 { display:grid; grid-template-columns:1fr 26px; gap:6px; align-items:center; }
+  .prod .linea2 { display:grid; grid-template-columns:56px 84px 1fr; gap:6px; margin-top:5px;
+                  align-items:center; }
+  .prod input { padding:6px 8px; font-size:.83rem; min-width:0; }
+  .prod input.cant, .prod input.precio { text-align:right; }
+  .prod select { padding:6px 6px; font-size:.8rem; }
+  .prod .importe { grid-column:1 / -1; font-size:.78rem; color:var(--azul); font-weight:600;
+                   text-align:right; }
+  .prod .quitar { border:0; background:#f3eaea; color:#a33; border-radius:7px; height:30px;
+                  font-size:1rem; line-height:1; cursor:pointer; padding:0; }
+
+  .masfilas { background:none; border:1px dashed #b9c2d0; color:var(--azul); font:inherit;
+              font-size:.82rem; font-weight:600; padding:8px; width:100%; border-radius:8px;
+              cursor:pointer; margin-top:8px; }
+  .check { display:flex; align-items:center; gap:8px; margin-top:12px; font-size:.82rem; color:var(--gris); }
+  .check input { width:16px; height:16px; }
+  .acciones { display:flex; gap:10px; margin-top:12px; }
+  button { font:inherit; font-weight:600; padding:11px; border:0; border-radius:9px; cursor:pointer; }
+  .primario { background:var(--azul); color:#fff; flex:1; }
+  .ayuda { font-size:.74rem; color:var(--gris); margin-top:8px; line-height:1.45; }
+  .aviso { background:#eef6f1; border:1px solid #cfe3d8; color:#1c5c46; border-radius:8px;
+           padding:9px 11px; font-size:.8rem; line-height:1.45; margin-top:14px; }
+  .aviso a { color:#1c5c46; font-weight:600; }
+  #visorPDF { width:100%; height:360px; margin-top:8px; border:1px solid var(--linea);
+              border-radius:8px; background:#fff; }
+
+  .hoja { background:#fff; max-width:760px; margin:0 auto; padding:26px 28px 30px;
+          box-shadow:0 2px 14px rgba(22,32,44,.12); border-radius:4px; }
+  .top { display:flex; justify-content:space-between; align-items:flex-end;
+         border-bottom:3px solid var(--azul); padding-bottom:10px; }
+  .marca { font-size:16pt; font-weight:700; color:var(--azul); }
+  .fecha { text-align:right; font-size:9pt; color:var(--gris); }
+  .datos { display:flex; gap:20px; margin:12px 0 4px; font-size:9.5pt; }
+  .datos div { flex:1; }
+  .datos span { display:block; color:#6b7a8d; font-size:8pt; text-transform:uppercase; letter-spacing:.4px; }
+  table.items { width:100%; border-collapse:collapse; margin-top:8px; font-size:9.5pt; }
+  table.items th { background:var(--azul); color:#fff; text-align:left; padding:7px 8px; font-weight:600; }
+  table.items td { padding:6px 8px; border-bottom:1px solid var(--linea); }
+  .num { text-align:right; }
+  .vacio { padding:20px 0; color:var(--gris); font-size:9.5pt; }
+  table.total { margin-top:12px; margin-left:auto; width:52%; font-size:10pt; }
+  table.total td { padding:4px 8px; }
+  table.total tr:last-child td { border-top:2px solid var(--azul); font-weight:700; font-size:12pt;
+                                 color:var(--azul); }
+  .cond { margin-top:18px; font-size:9pt; color:#3d4a5c; white-space:pre-wrap; }
+  .pie { margin-top:22px; border-top:1px solid var(--linea); padding-top:8px; font-size:8.5pt; color:var(--gris); }
+  @media (max-width:900px) { .app { grid-template-columns:1fr; } }
+  @media print {
+    body { background:#fff; } .panel { display:none; } .app { display:block; padding:0; }
+    .hoja { box-shadow:none; max-width:none; padding:0; } @page { size:A4; margin:15mm; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="panel">
+    <div class="aviso" id="avisoApp" hidden style="background:#fdf3e3;border-color:#f0dcb8;color:#8a5b00">
+      Estás en una vista previa: las descargas suelen estar bloqueadas. Abre la página en Chrome.
+    </div>
+    <h2>Servicios generales</h2>
+    <label>Nombre del negocio</label>
+    <input id="negocio" value="SERVICIOS GENERALES">
+    <div class="fila">
+      <div><label>N° presupuesto</label><input id="numero" value="001"></div>
+      <div><label>Cliente (opcional)</label><input id="cliente" placeholder="Nombre"></div>
+    </div>
+    <label>Trabajo / dirección (opcional)</label>
+    <input id="trabajo" placeholder="Ej. Dpto. 302, Av. Los Álamos 145">
+
+    <div class="tabla">
+      <div class="cabecera"><span>Partida</span><span>Importe</span></div>
+      <div id="filas"></div>
+      <button class="masfilas" onclick="agregarFilas(5)">+ Añadir filas</button>
+    </div>
+
+    <label>Condiciones (opcional)</label>
+    <textarea id="condiciones" rows="3">Incluye materiales y mano de obra.
+Anticipo 50% al iniciar, saldo al terminar.
+Tiempo de ejecución: 3 días útiles.</textarea>
+
+    <div class="check">
+      <input type="checkbox" id="igv">
+      <label for="igv" style="margin:0">Agregar IGV 18% (si emites factura)</label>
+    </div>
+
+    <div class="acciones">
+      <button class="primario" onclick="descargarPDF()">Descargar PDF</button>
+    </div>
+    <div class="ayuda">Empiezas con cinco partidas. El importe sale solo: cantidad × precio.</div>
+
+    <div id="salidaPDF" hidden>
+      <div class="aviso" id="avisoPDF"></div>
+      <iframe id="visorPDF" title="Vista previa del PDF"></iframe>
+    </div>
+  </div>
+
+  <div class="hoja">
+    <div class="top">
+      <div class="marca"><span id="vNegocio"></span></div>
+      <div class="fecha">Presupuesto N° <b id="vNumero"></b><br><span id="vFecha"></span></div>
+    </div>
+    <div class="datos">
+      <div><span>Cliente</span><b id="vCliente">—</b></div>
+      <div><span>Trabajo</span><b id="vTrabajo">—</b></div>
+    </div>
+    <table class="items" id="vTabla" hidden>
+      <thead><tr><th style="width:16%">Cant.</th><th style="width:9%">Und.</th>
+        <th>Partida</th><th class="num" style="width:15%">P. unit.</th>
+        <th class="num" style="width:16%">Importe</th></tr></thead>
+      <tbody id="vLista"></tbody>
+    </table>
+    <div class="vacio" id="vVacio">Todavía no hay partidas.</div>
+    <table class="total" id="vTotalTabla" hidden>
+      <tbody id="vTotales"></tbody>
+    </table>
+    <div class="cond" id="vCond"></div>
+    <div class="pie">Presupuesto válido por 7 días. Precios sujetos a variación del material.</div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const money = n => n.toFixed(2);
+const UNIDADES = ["und", "m2", "ml", "punto", "hora", "día", "global"];
+
+function agregarFila(desc = "", cant = "", und = "und", precio = "") {
+  const fila = document.createElement("div");
+  fila.className = "prod";
+  fila.innerHTML =
+    '<div class="linea1">' +
+      '<input class="nombre" placeholder="Partida: instalación de piso, puntos eléctricos...">' +
+      '<button class="quitar" title="Quitar" aria-label="Quitar">&times;</button>' +
+    '</div>' +
+    '<div class="linea2">' +
+      '<input class="cant" inputmode="decimal" placeholder="Cant.">' +
+      '<select class="und">' + UNIDADES.map(u => '<option value="' + u + '">' + u + '</option>').join("") + '</select>' +
+      '<input class="precio" inputmode="decimal" placeholder="P. unitario">' +
+      '<div class="importe"></div>' +
+    '</div>';
+  fila.querySelector(".nombre").value = desc;
+  fila.querySelector(".cant").value = cant;
+  fila.querySelector(".und").value = und;
+  fila.querySelector(".precio").value = precio;
+  fila.querySelector(".quitar").onclick = () => { fila.remove(); pintar(); };
+  $("filas").appendChild(fila);
+  fila.querySelectorAll("input, select").forEach(i => i.addEventListener("input", pintar));
+  pintar();
+}
+
+function agregarFilas(n) { for (let i = 0; i < n; i++) agregarFila(); }
+
+function leer() {
+  const filas = [];
+  document.querySelectorAll(".prod").forEach(p => {
+    const desc = p.querySelector(".nombre").value.trim();
+    const cant = parseFloat(p.querySelector(".cant").value.replace(",", "."));
+    const und = p.querySelector(".und").value;
+    const precio = parseFloat(p.querySelector(".precio").value.replace(",", "."));
+    if (!desc || !isFinite(precio)) return;
+    const cantidad = isFinite(cant) && cant > 0 ? cant : 1;
+    filas.push({ desc, cant: cantidad, und, precio, importe: cantidad * precio });
+  });
+  return filas;
+}
+
+function pintar() {
+  const hoy = new Date();
+  const fecha = String(hoy.getDate()).padStart(2,"0") + "/" +
+                String(hoy.getMonth()+1).padStart(2,"0") + "/" + hoy.getFullYear();
+  $("vNegocio").textContent = $("negocio").value || "SERVICIOS GENERALES";
+  $("vNumero").textContent = $("numero").value || "";
+  $("vFecha").textContent = fecha;
+  $("vCliente").textContent = $("cliente").value.trim() || "—";
+  $("vTrabajo").textContent = $("trabajo").value.trim() || "—";
+  $("vCond").textContent = $("condiciones").value.trim();
+
+  const filas = leer();
+  let total = 0;
+  const lista = $("vLista");
+  lista.innerHTML = "";
+  for (const f of filas) {
+    total += f.importe;
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td class="num">' + f.cant + '</td><td></td><td></td>' +
+                   '<td class="num">' + money(f.precio) + '</td>' +
+                   '<td class="num">' + money(f.importe) + '</td>';
+    tr.children[1].textContent = f.und;
+    tr.children[2].textContent = f.desc;
+    lista.appendChild(tr);
+  }
+
+  const totales = $("vTotales");
+  totales.innerHTML = "";
+  const conIGV = $("igv").checked;
+  const fila = (etiqueta, valor, fuerte) => {
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td"); td1.textContent = etiqueta;
+    const td2 = document.createElement("td"); td2.className = "num"; td2.textContent = "S/ " + money(valor);
+    if (!fuerte) { td1.style.color = "#5b6b7f"; td2.style.color = "#5b6b7f"; }
+    tr.append(td1, td2); totales.appendChild(tr);
+  };
+  if (conIGV) {
+    const sub = total / 1.18;
+    fila("Subtotal", sub, false);
+    fila("IGV 18%", total - sub, false);
+    fila("TOTAL", total, true);
+  } else {
+    fila("TOTAL", total, true);
+  }
+
+  const hay = filas.length > 0;
+  $("vTabla").hidden = !hay;
+  $("vTotalTabla").hidden = !hay;
+  $("vVacio").hidden = hay;
+
+  // cada fila muestra su importe debajo
+  document.querySelectorAll(".prod").forEach(p => {
+    const cant = parseFloat(p.querySelector(".cant").value.replace(",", "."));
+    const precio = parseFloat(p.querySelector(".precio").value.replace(",", "."));
+    const aviso = p.querySelector(".importe");
+    aviso.textContent = isFinite(precio)
+      ? "S/ " + money((isFinite(cant) && cant > 0 ? cant : 1) * precio) : "";
+  });
+}
+
+["negocio", "numero", "cliente", "trabajo", "condiciones"].forEach(id =>
+  $(id).addEventListener("input", pintar));
+$("igv").addEventListener("change", pintar);
+
+if (window.self !== window.top) $("avisoApp").hidden = false;
+
+// Cinco partidas de ejemplo: un trabajo típico de piso + eléctrico.
+[["Instalación de piso laminado 8 mm", "42", "m2", "18.00"],
+ ["Nivelación de contrapiso", "42", "m2", "6.50"],
+ ["Puntos eléctricos nuevos (tomacorriente)", "6", "punto", "45.00"],
+ ["Cableado y canalización", "25", "ml", "8.00"],
+ ["Retiro de material sobrante", "1", "global", "80.00"]]
+  .forEach(([d, c, u, p]) => agregarFila(d, c, u, p));
+
+pintar();
+</script>
+
+<script>
+/* ===== Generador de PDF propio (igual que la demo de bodega) ===== */
+const W_PAG = 595, H_PAG = 842, MARGEN = 40;
+const AZUL = [0.12, 0.22, 0.39];
+const TINTA = [0.09, 0.13, 0.17];
+const GRIS  = [0.36, 0.42, 0.50];
+const CLARO = [0.89, 0.91, 0.94];
+
+const ANCHOS = {" ":278,"!":278,'"':355,"#":556,"$":556,"%":889,"&":667,"'":191,
+ "(":333,")":333,"*":389,"+":584,",":278,"-":333,".":278,"/":278,":":278,";":278,
+ "<":584,"=":584,">":584,"?":556,"@":1015,"A":667,"B":667,"C":722,"D":722,"E":667,
+ "F":611,"G":778,"H":722,"I":278,"J":500,"K":667,"L":556,"M":833,"N":722,"O":778,
+ "P":667,"Q":778,"R":722,"S":667,"T":611,"U":722,"V":667,"W":944,"X":667,"Y":667,
+ "Z":611,"[":278,"\\":278,"]":278,"^":469,"_":556,"`":333,"a":556,"b":556,"c":500,
+ "d":556,"e":556,"f":278,"g":556,"h":556,"i":222,"j":222,"k":500,"l":222,"m":833,
+ "n":556,"o":556,"p":556,"q":556,"r":333,"s":500,"t":278,"u":556,"v":500,"w":722,
+ "x":500,"y":500,"z":500,"{":334,"|":260,"}":334,"~":584,"·":278};
+
+function ancho(t, tam, neg) {
+  let w = 0;
+  for (const c of t) w += (ANCHOS[c] !== undefined ? ANCHOS[c] : 500);
+  return (w / 1000) * tam * (neg ? 1.03 : 1);
+}
+function limpiar(s) {
+  return String(s).replace(/[^\x20-\xFF]/g, c =>
+    ({"–":"-","—":"-","“":'"',"”":'"',"‘":"'","’":"'","×":"x","≤":"<"}[c] || "?"));
+}
+function escapar(s) {
+  return limpiar(s).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+}
+function recortar(t, max, tam) {
+  if (ancho(t, tam, false) <= max) return t;
+  let s = t;
+  while (s.length > 1 && ancho(s + "...", tam, false) > max) s = s.slice(0, -1);
+  return s.trimEnd() + "...";
+}
+function envolver(texto, max, tam) {
+  const salida = [];
+  for (const parrafo of String(texto).split("\n")) {
+    let linea = "";
+    for (const palabra of parrafo.split(/\s+/)) {
+      const prueba = linea ? linea + " " + palabra : palabra;
+      if (ancho(prueba, tam, false) > max && linea) { salida.push(linea); linea = palabra; }
+      else linea = prueba;
+    }
+    salida.push(linea);
+  }
+  return salida;
+}
+function texto(x, y, s, tam, o = {}) {
+  const neg = !!o.negrita, color = o.color || TINTA;
+  let xx = x;
+  if (o.alinear === "derecha") xx = x - ancho(s, tam, neg);
+  if (o.alinear === "centro") xx = x - ancho(s, tam, neg) / 2;
+  return `BT /${neg ? "F2" : "F1"} ${tam} Tf ${color[0]} ${color[1]} ${color[2]} rg ` +
+         `1 0 0 1 ${xx.toFixed(2)} ${y.toFixed(2)} Tm (${escapar(s)}) Tj ET`;
+}
+function rect(x, y, w, h, color) {
+  return `${color[0]} ${color[1]} ${color[2]} rg ${x} ${y} ${w} ${h} re f`;
+}
+function linea(x1, y1, x2, y2, color, grosor = 0.5) {
+  return `${grosor} w ${color[0]} ${color[1]} ${color[2]} RG ${x1} ${y1} m ${x2} ${y2} l S`;
+}
+
+function construirPDF(d) {
+  const FILAS = 20;
+  const paginas = [];
+  for (let i = 0; i < d.filas.length; i += FILAS) paginas.push(d.filas.slice(i, i + FILAS));
+  if (!paginas.length) paginas.push([]);
+
+  const contenidos = paginas.map((grupo, idx) => {
+    const ultima = idx === paginas.length - 1;
+    const ops = [];
+    ops.push(rect(0, H_PAG - 72, W_PAG, 72, AZUL));
+    ops.push(texto(MARGEN, H_PAG - 44, d.negocio, 17, {negrita: true, color: [1,1,1]}));
+    ops.push(texto(W_PAG - MARGEN, H_PAG - 40, "PRESUPUESTO N° " + d.numero, 9,
+                   {color: [1,1,1], alinear: "derecha"}));
+    ops.push(texto(W_PAG - MARGEN, H_PAG - 54, d.fecha, 9,
+                   {color: [0.8,0.85,0.9], alinear: "derecha"}));
+
+    let y = H_PAG - 96;
+    ops.push(texto(MARGEN, y, "CLIENTE", 7, {color: GRIS, negrita: true}));
+    ops.push(texto(W_PAG / 2, y, "TRABAJO", 7, {color: GRIS, negrita: true}));
+    y -= 13;
+    ops.push(texto(MARGEN, y, recortar(d.cliente || "—", 240, 9.5), 9.5));
+    ops.push(texto(W_PAG / 2, y, recortar(d.trabajo || "—", 240, 9.5), 9.5));
+
+    y -= 22;
+    ops.push(rect(MARGEN, y - 5, W_PAG - 2 * MARGEN, 18, AZUL));
+    ops.push(texto(76, y, "CANT.", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
+    ops.push(texto(84, y, "UND.", 8, {negrita: true, color: [1,1,1]}));
+    ops.push(texto(126, y, "PARTIDA", 8, {negrita: true, color: [1,1,1]}));
+    ops.push(texto(470, y, "P. UNIT.", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
+    ops.push(texto(W_PAG - MARGEN, y, "IMPORTE", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
+
+    y -= 22;
+    for (const f of grupo) {
+      ops.push(texto(76, y, String(f.cant), 9.5, {alinear: "derecha"}));
+      ops.push(texto(84, y, f.und, 9));
+      ops.push(texto(126, y, recortar(f.desc, 330, 9.5), 9.5));
+      ops.push(texto(470, y, money(f.precio), 9.5, {alinear: "derecha"}));
+      ops.push(texto(W_PAG - MARGEN, y, money(f.importe), 9.5, {alinear: "derecha"}));
+      ops.push(linea(MARGEN, y - 5, W_PAG - MARGEN, y - 5, CLARO, 0.4));
+      y -= 18;
+    }
+
+    if (ultima) {
+      const conIGV = d.igv;
+      const total = d.total;
+      const sub = conIGV ? total / 1.18 : total;
+      y -= 10;
+      if (conIGV) {
+        ops.push(texto(470, y, "Subtotal", 9.5, {color: GRIS, alinear: "derecha"}));
+        ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(sub), 9.5, {color: GRIS, alinear: "derecha"}));
+        y -= 14;
+        ops.push(texto(470, y, "IGV 18%", 9.5, {color: GRIS, alinear: "derecha"}));
+        ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(total - sub), 9.5, {color: GRIS, alinear: "derecha"}));
+        y -= 8;
+      }
+      ops.push(linea(330, y + 2, W_PAG - MARGEN, y + 2, AZUL, 1.2));
+      y -= 18;
+      ops.push(texto(470, y, "TOTAL", 11, {negrita: true, color: AZUL, alinear: "derecha"}));
+      ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(total), 12.5,
+                     {negrita: true, color: AZUL, alinear: "derecha"}));
+
+      if (d.condiciones) {
+        y -= 34;
+        ops.push(texto(MARGEN, y, "CONDICIONES", 7, {color: GRIS, negrita: true}));
+        y -= 12;
+        for (const l of envolver(d.condiciones, W_PAG - 2 * MARGEN, 9)) {
+          ops.push(texto(MARGEN, y, l, 9, {color: [0.24,0.29,0.36]}));
+          y -= 11.5;
+        }
+      }
+    }
+
+    ops.push(texto(MARGEN, 52, "Presupuesto válido por 7 días. Precios sujetos a variación del material.",
+                   7.5, {color: GRIS}));
+    if (paginas.length > 1)
+      ops.push(texto(W_PAG - MARGEN, 52, (idx + 1) + " / " + paginas.length, 7.5,
+                     {color: GRIS, alinear: "derecha"}));
+    return ops.join("\n");
+  });
+
+  const n = contenidos.length;
+  const objPag = 2, primerPag = 3, objF1 = 3 + n, objF2 = 4 + n, primerCont = 5 + n;
+  const partes = [[1, "<< /Type /Catalog /Pages 2 0 R >>"]];
+  const kids = [];
+  for (let i = 0; i < n; i++) kids.push(`${primerPag + i} 0 R`);
+  partes.push([objPag, `<< /Type /Pages /Kids [${kids.join(" ")}] /Count ${n} >>`]);
+  for (let i = 0; i < n; i++) {
+    partes.push([primerPag + i,
+      `<< /Type /Page /Parent ${objPag} 0 R /MediaBox [0 0 ${W_PAG} ${H_PAG}] ` +
+      `/Resources << /Font << /F1 ${objF1} 0 R /F2 ${objF2} 0 R >> >> /Contents ${primerCont + i} 0 R >>`]);
+  }
+  partes.push([objF1, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"]);
+  partes.push([objF2, "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"]);
+  for (let i = 0; i < n; i++)
+    partes.push([primerCont + i, `<< /Length ${contenidos[i].length} >>\nstream\n${contenidos[i]}\nendstream`]);
+  partes.sort((a, b) => a[0] - b[0]);
+
+  let pdf = "%PDF-1.4\n";
+  const off = [];
+  for (const [num, cuerpo] of partes) {
+    off[num] = pdf.length;
+    pdf += `${num} 0 obj\n${cuerpo}\nendobj\n`;
+  }
+  const inicio = pdf.length, total = partes.length + 1;
+  pdf += `xref\n0 ${total}\n0000000000 65535 f \n`;
+  for (let i = 1; i < total; i++) pdf += String(off[i] || 0).padStart(10, "0") + " 00000 n \n";
+  pdf += `trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${inicio}\n%%EOF\n`;
+  return pdf;
+}
+
+function descargarPDF() {
+  const filas = leer();
+  if (!filas.length) { alert("Agrega al menos una partida con nombre y precio."); return; }
+
+  const total = filas.reduce((s, f) => s + f.importe, 0);
+  const hoy = new Date();
+  const fecha = String(hoy.getDate()).padStart(2,"0") + "/" +
+                String(hoy.getMonth()+1).padStart(2,"0") + "/" + hoy.getFullYear();
+
+  const contenido = construirPDF({
+    negocio: $("negocio").value || "SERVICIOS GENERALES",
+    numero: $("numero").value || "001",
+    fecha,
+    cliente: $("cliente").value.trim(),
+    trabajo: $("trabajo").value.trim(),
+    filas,
+    total,
+    igv: $("igv").checked,
+    condiciones: $("condiciones").value.trim(),
+  });
+
+  const bytes = new Uint8Array(contenido.length);
+  for (let i = 0; i < contenido.length; i++) bytes[i] = contenido.charCodeAt(i) & 0xFF;
+  const url = URL.createObjectURL(new Blob([bytes], {type: "application/pdf"}));
+  const nombre = "Presupuesto-" + ($("numero").value || "001") + "-" + fecha.replace(/\//g, "-") + ".pdf";
+
+  try {
+    const a = document.createElement("a");
+    a.href = url; a.download = nombre;
+    document.body.appendChild(a); a.click(); a.remove();
+  } catch (e) {}
+
+  $("visorPDF").src = url;
+  $("avisoPDF").innerHTML = "PDF listo (" + (bytes.length / 1024).toFixed(1) + " KB). " +
+    '<a href="' + url + '" target="_blank" rel="noopener">Abrir</a> · ' +
+    '<a href="' + url + '" download="' + nombre + '">Guardar</a>';
+  $("salidaPDF").hidden = false;
+  setTimeout(() => URL.revokeObjectURL(url), 300000);
+}
+</script>
+</body>
+</html>
