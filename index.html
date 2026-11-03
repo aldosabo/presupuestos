@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
@@ -25,7 +25,7 @@
   .cabecera span:last-child { text-align:right; }
   .prod { border-bottom:1px dashed #e8edf1; padding:6px 0 8px; }
   .prod .linea1 { display:grid; grid-template-columns:1fr 26px; gap:6px; align-items:center; }
-  .prod .linea2 { display:grid; grid-template-columns:56px 84px 1fr; gap:6px; margin-top:5px;
+  .prod .linea2 { display:grid; grid-template-columns:74px 1fr; gap:6px; margin-top:5px;
                   align-items:center; }
   .prod input { padding:6px 8px; font-size:.83rem; min-width:0; }
   .prod input.cant, .prod input.precio { text-align:right; }
@@ -94,7 +94,7 @@
     <input id="trabajo" placeholder="Ej. Dpto. 302, Av. Los Álamos 145">
 
     <div class="tabla">
-      <div class="cabecera"><span>Partida</span><span>Importe</span></div>
+      <div class="cabecera"><span>Servicio</span><span>Importe</span></div>
       <div id="filas"></div>
       <button class="masfilas" onclick="agregarFilas(5)">+ Añadir filas</button>
     </div>
@@ -112,7 +112,7 @@ Tiempo de ejecución: 3 días útiles.</textarea>
     <div class="acciones">
       <button class="primario" onclick="descargarPDF()">Descargar PDF</button>
     </div>
-    <div class="ayuda">Empiezas con cinco partidas. El importe sale solo: cantidad × precio.</div>
+    <div class="ayuda">Empiezas con cinco servicios. El importe sale solo: cantidad × precio.</div>
 
     <div id="salidaPDF" hidden>
       <div class="aviso" id="avisoPDF"></div>
@@ -130,12 +130,12 @@ Tiempo de ejecución: 3 días útiles.</textarea>
       <div><span>Trabajo</span><b id="vTrabajo">—</b></div>
     </div>
     <table class="items" id="vTabla" hidden>
-      <thead><tr><th style="width:16%">Cant.</th><th style="width:9%">Und.</th>
-        <th>Partida</th><th class="num" style="width:15%">P. unit.</th>
-        <th class="num" style="width:16%">Importe</th></tr></thead>
+      <thead><tr><th style="width:12%">Cant.</th>
+        <th>Servicio</th><th class="num" style="width:18%">Precio</th>
+        <th class="num" style="width:18%">Importe</th></tr></thead>
       <tbody id="vLista"></tbody>
     </table>
-    <div class="vacio" id="vVacio">Todavía no hay partidas.</div>
+    <div class="vacio" id="vVacio">Todavía no hay servicios.</div>
     <table class="total" id="vTotalTabla" hidden>
       <tbody id="vTotales"></tbody>
     </table>
@@ -147,29 +147,27 @@ Tiempo de ejecución: 3 días útiles.</textarea>
 <script>
 const $ = id => document.getElementById(id);
 const money = n => n.toFixed(2);
-const UNIDADES = ["und", "m2", "ml", "punto", "hora", "día", "global"];
+const UNIDADES_DEFAULT = "1";
 
-function agregarFila(desc = "", cant = "", und = "und", precio = "") {
+function agregarFila(desc = "", cant = "", precio = "") {
   const fila = document.createElement("div");
   fila.className = "prod";
   fila.innerHTML =
     '<div class="linea1">' +
-      '<input class="nombre" placeholder="Partida: instalación de piso, puntos eléctricos...">' +
+      '<input class="nombre" placeholder="Servicio: instalación de piso, puntos eléctricos...">' +
       '<button class="quitar" title="Quitar" aria-label="Quitar">&times;</button>' +
     '</div>' +
     '<div class="linea2">' +
       '<input class="cant" inputmode="decimal" placeholder="Cant.">' +
-      '<select class="und">' + UNIDADES.map(u => '<option value="' + u + '">' + u + '</option>').join("") + '</select>' +
-      '<input class="precio" inputmode="decimal" placeholder="P. unitario">' +
+      '<input class="precio" inputmode="decimal" placeholder="Precio del servicio">' +
       '<div class="importe"></div>' +
     '</div>';
   fila.querySelector(".nombre").value = desc;
   fila.querySelector(".cant").value = cant;
-  fila.querySelector(".und").value = und;
   fila.querySelector(".precio").value = precio;
   fila.querySelector(".quitar").onclick = () => { fila.remove(); pintar(); };
   $("filas").appendChild(fila);
-  fila.querySelectorAll("input, select").forEach(i => i.addEventListener("input", pintar));
+  fila.querySelectorAll("input").forEach(i => i.addEventListener("input", pintar));
   pintar();
 }
 
@@ -180,11 +178,10 @@ function leer() {
   document.querySelectorAll(".prod").forEach(p => {
     const desc = p.querySelector(".nombre").value.trim();
     const cant = parseFloat(p.querySelector(".cant").value.replace(",", "."));
-    const und = p.querySelector(".und").value;
     const precio = parseFloat(p.querySelector(".precio").value.replace(",", "."));
     if (!desc || !isFinite(precio)) return;
     const cantidad = isFinite(cant) && cant > 0 ? cant : 1;
-    filas.push({ desc, cant: cantidad, und, precio, importe: cantidad * precio });
+    filas.push({ desc, cant: cantidad, precio, importe: cantidad * precio });
   });
   return filas;
 }
@@ -207,11 +204,10 @@ function pintar() {
   for (const f of filas) {
     total += f.importe;
     const tr = document.createElement("tr");
-    tr.innerHTML = '<td class="num">' + f.cant + '</td><td></td><td></td>' +
+    tr.innerHTML = '<td class="num">' + f.cant + '</td><td></td>' +
                    '<td class="num">' + money(f.precio) + '</td>' +
                    '<td class="num">' + money(f.importe) + '</td>';
-    tr.children[1].textContent = f.und;
-    tr.children[2].textContent = f.desc;
+    tr.children[1].textContent = f.desc;
     lista.appendChild(tr);
   }
 
@@ -255,13 +251,13 @@ $("igv").addEventListener("change", pintar);
 
 if (window.self !== window.top) $("avisoApp").hidden = false;
 
-// Cinco partidas de ejemplo: un trabajo típico de piso + eléctrico.
-[["Instalación de piso laminado 8 mm", "42", "m2", "18.00"],
- ["Nivelación de contrapiso", "42", "m2", "6.50"],
- ["Puntos eléctricos nuevos (tomacorriente)", "6", "punto", "45.00"],
- ["Cableado y canalización", "25", "ml", "8.00"],
- ["Retiro de material sobrante", "1", "global", "80.00"]]
-  .forEach(([d, c, u, p]) => agregarFila(d, c, u, p));
+// Cinco servicios de ejemplo, con su precio como se cobra en la calle.
+[["Instalación de piso laminado (42 m2)", "1", "756.00"],
+ ["Nivelación de contrapiso", "1", "273.00"],
+ ["Puntos eléctricos nuevos", "6", "45.00"],
+ ["Cableado y canalización", "1", "200.00"],
+ ["Retiro de material sobrante", "1", "80.00"]]
+  .forEach(([d, c, p]) => agregarFila(d, c, p));
 
 pintar();
 </script>
@@ -350,22 +346,20 @@ function construirPDF(d) {
     ops.push(texto(MARGEN, y, "CLIENTE", 7, {color: GRIS, negrita: true}));
     ops.push(texto(W_PAG / 2, y, "TRABAJO", 7, {color: GRIS, negrita: true}));
     y -= 13;
-    ops.push(texto(MARGEN, y, recortar(d.cliente || "—", 240, 9.5), 9.5));
-    ops.push(texto(W_PAG / 2, y, recortar(d.trabajo || "—", 240, 9.5), 9.5));
+    ops.push(texto(MARGEN, y, recortar(d.cliente || "", 240, 9.5), 9.5));
+    ops.push(texto(W_PAG / 2, y, recortar(d.trabajo || "", 240, 9.5), 9.5));
 
     y -= 22;
     ops.push(rect(MARGEN, y - 5, W_PAG - 2 * MARGEN, 18, AZUL));
-    ops.push(texto(76, y, "CANT.", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
-    ops.push(texto(84, y, "UND.", 8, {negrita: true, color: [1,1,1]}));
-    ops.push(texto(126, y, "PARTIDA", 8, {negrita: true, color: [1,1,1]}));
-    ops.push(texto(470, y, "P. UNIT.", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
+    ops.push(texto(80, y, "CANT.", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
+    ops.push(texto(94, y, "SERVICIO", 8, {negrita: true, color: [1,1,1]}));
+    ops.push(texto(470, y, "PRECIO", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
     ops.push(texto(W_PAG - MARGEN, y, "IMPORTE", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
 
     y -= 22;
     for (const f of grupo) {
-      ops.push(texto(76, y, String(f.cant), 9.5, {alinear: "derecha"}));
-      ops.push(texto(84, y, f.und, 9));
-      ops.push(texto(126, y, recortar(f.desc, 330, 9.5), 9.5));
+      ops.push(texto(80, y, String(f.cant), 9.5, {alinear: "derecha"}));
+      ops.push(texto(94, y, recortar(f.desc, 360, 9.5), 9.5));
       ops.push(texto(470, y, money(f.precio), 9.5, {alinear: "derecha"}));
       ops.push(texto(W_PAG - MARGEN, y, money(f.importe), 9.5, {alinear: "derecha"}));
       ops.push(linea(MARGEN, y - 5, W_PAG - MARGEN, y - 5, CLARO, 0.4));
