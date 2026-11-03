@@ -9,7 +9,7 @@
   * { box-sizing:border-box; }
   body { margin:0; font-family:"Segoe UI",system-ui,Arial,sans-serif; color:var(--tinta);
          background:#eef1f5; }
-  .app { display:grid; grid-template-columns:410px 1fr; gap:18px; padding:18px; align-items:start; }
+  .app { display:grid; grid-template-columns:400px 1fr; gap:18px; padding:18px; align-items:start; }
   .panel { background:#fff; border:1px solid var(--linea); border-radius:12px; padding:16px; }
   h2 { font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gris);
        margin:0 0 10px; font-weight:600; }
@@ -21,14 +21,14 @@
 
   .tabla { margin-top:12px; }
   .cabecera { font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gris);
-              padding:0 2px 4px; display:grid; grid-template-columns:1fr 50px 78px 30px; gap:5px; }
+              padding:0 2px 5px; display:grid; grid-template-columns:minmax(0,1fr) 60px 76px 26px; gap:6px; }
   .cabecera span:nth-child(2), .cabecera span:nth-child(3) { text-align:right; }
-  .prod { display:grid; grid-template-columns:1fr 50px 78px 30px; gap:5px; align-items:center;
-          padding:3px 0; border-bottom:1px dashed #eef2f6; }
-  .prod input { padding:5px 7px; font-size:.82rem; min-width:0; border-radius:7px; }
+  .prod { display:grid; grid-template-columns:minmax(0,1fr) 60px 76px 26px; gap:6px;
+          align-items:center; padding:3px 0; }
+  .prod input { padding:6px 8px; font-size:.85rem; min-width:0; }
   .prod input.cant, .prod input.precio { text-align:right; }
-  .prod .quitar { border:0; background:#f3eaea; color:#a33; border-radius:7px; height:28px;
-                  font-size:.95rem; line-height:1; cursor:pointer; padding:0; }
+  .prod .quitar { border:0; background:#f3eaea; color:#a33; border-radius:7px; height:32px;
+                  font-size:1.05rem; line-height:1; cursor:pointer; padding:0; }
 
   .masfilas { background:none; border:1px dashed #b9c2d0; color:var(--azul); font:inherit;
               font-size:.82rem; font-weight:600; padding:8px; width:100%; border-radius:8px;
@@ -66,14 +66,6 @@
   .cond { margin-top:18px; font-size:9pt; color:#3d4a5c; white-space:pre-wrap; }
   .pie { margin-top:22px; border-top:1px solid var(--linea); padding-top:8px; font-size:8.5pt; color:var(--gris); }
   @media (max-width:900px) { .app { grid-template-columns:1fr; } }
-  @media (max-width:640px) {
-    .cabecera { display:none; }
-    .prod { grid-template-columns:1fr 1fr 1fr 30px; }
-    .prod .nombre { grid-column:1 / 4; }
-    .prod .cant { grid-column:1; margin-top:4px; }
-    .prod .precio { grid-column:2 / 4; margin-top:4px; }
-    .prod .quitar { grid-column:4; grid-row:1 / 3; height:100%; }
-  }
   @media print {
     body { background:#fff; } .panel { display:none; } .app { display:block; padding:0; }
     .hoja { box-shadow:none; max-width:none; padding:0; } @page { size:A4; margin:15mm; }
