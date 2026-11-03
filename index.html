@@ -65,7 +65,15 @@
                                  color:var(--azul); }
   .cond { margin-top:18px; font-size:9pt; color:#3d4a5c; white-space:pre-wrap; }
   .pie { margin-top:22px; border-top:1px solid var(--linea); padding-top:8px; font-size:8.5pt; color:var(--gris); }
-  @media (max-width:900px) { .app { grid-template-columns:1fr; } }
+  @media (max-width:900px) {
+    .app { grid-template-columns:1fr; padding:12px; gap:14px; }
+    .panel { padding:14px; }
+    /* iOS hace zoom automatico al enfocar un campo con letra menor a 16 px:
+       eso es lo que hace ver las filas "gigantes". Con 16 px no hay zoom. */
+    input, textarea, select { font-size:16px; }
+    .prod input { font-size:16px; padding:7px 8px; }
+    .cabecera { font-size:.62rem; }
+  }
   @media print {
     body { background:#fff; } .panel { display:none; } .app { display:block; padding:0; }
     .hoja { box-shadow:none; max-width:none; padding:0; } @page { size:A4; margin:15mm; }
