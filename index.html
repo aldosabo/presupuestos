@@ -21,9 +21,9 @@
 
   .tabla { margin-top:12px; }
   .cabecera { font-size:.64rem; text-transform:uppercase; letter-spacing:.05em; color:var(--gris);
-              padding:0 2px 5px; display:grid; grid-template-columns:minmax(0,1fr) 60px 76px 26px; gap:6px; }
+              padding:0 2px 5px; display:grid; grid-template-columns:minmax(0,1fr) 54px 88px 26px; gap:6px; }
   .cabecera span:nth-child(2), .cabecera span:nth-child(3) { text-align:right; }
-  .prod { display:grid; grid-template-columns:minmax(0,1fr) 60px 76px 26px; gap:6px;
+  .prod { display:grid; grid-template-columns:minmax(0,1fr) 54px 88px 26px; gap:6px;
           align-items:center; padding:3px 0; }
   .prod input { padding:6px 8px; font-size:.85rem; min-width:0; }
   .prod input.cant, .prod input.precio { text-align:right; }
@@ -97,7 +97,7 @@
     <input id="trabajo" placeholder="Ej. Dpto. 302, Av. Los Álamos 145">
 
     <div class="tabla">
-      <div class="cabecera"><span>Servicio</span><span>Cant.</span><span>Precio</span><span></span></div>
+      <div class="cabecera"><span>Servicio</span><span>Cant.</span><span>Importe</span><span></span></div>
       <div id="filas"></div>
       <button class="masfilas" onclick="agregarFilas(5)">+ Añadir filas</button>
     </div>
@@ -115,7 +115,7 @@ Tiempo de ejecución: 3 días útiles.</textarea>
     <div class="acciones">
       <button class="primario" onclick="descargarPDF()">Descargar PDF</button>
     </div>
-    <div class="ayuda">Empiezas con cinco servicios. El importe sale solo: cantidad × precio.</div>
+    <div class="ayuda">Empiezas con cinco servicios. El total es la suma de los importes.</div>
 
     <div id="salidaPDF" hidden>
       <div class="aviso" id="avisoPDF"></div>
@@ -133,9 +133,8 @@ Tiempo de ejecución: 3 días útiles.</textarea>
       <div><span>Trabajo</span><b id="vTrabajo">—</b></div>
     </div>
     <table class="items" id="vTabla" hidden>
-      <thead><tr><th style="width:12%">Cant.</th>
-        <th>Servicio</th><th class="num" style="width:18%">Precio</th>
-        <th class="num" style="width:18%">Importe</th></tr></thead>
+      <thead><tr><th style="width:13%">Cant.</th>
+        <th>Servicio</th><th class="num" style="width:22%">Importe</th></tr></thead>
       <tbody id="vLista"></tbody>
     </table>
     <div class="vacio" id="vVacio">Todavía no hay servicios.</div>
@@ -158,7 +157,7 @@ function agregarFila(desc = "", cant = "", precio = "") {
   fila.innerHTML =
     '<input class="nombre" placeholder="Servicio: instalación de piso, puntos eléctricos...">' +
     '<input class="cant" inputmode="decimal" placeholder="Cant.">' +
-    '<input class="precio" inputmode="decimal" placeholder="Precio">' +
+    '<input class="precio" inputmode="decimal" placeholder="Importe">' +
     '<button class="quitar" title="Quitar" aria-label="Quitar">&times;</button>';
   fila.querySelector(".nombre").value = desc;
   fila.querySelector(".cant").value = cant;
@@ -179,7 +178,7 @@ function leer() {
     const precio = parseFloat(p.querySelector(".precio").value.replace(",", "."));
     if (!desc || !isFinite(precio)) return;
     const cantidad = isFinite(cant) && cant > 0 ? cant : 1;
-    filas.push({ desc, cant: cantidad, precio, importe: cantidad * precio });
+    filas.push({ desc, cant: cantidad, importe: precio });
   });
   return filas;
 }
@@ -203,7 +202,6 @@ function pintar() {
     total += f.importe;
     const tr = document.createElement("tr");
     tr.innerHTML = '<td class="num">' + f.cant + '</td><td></td>' +
-                   '<td class="num">' + money(f.precio) + '</td>' +
                    '<td class="num">' + money(f.importe) + '</td>';
     tr.children[1].textContent = f.desc;
     lista.appendChild(tr);
@@ -243,7 +241,7 @@ if (window.self !== window.top) $("avisoApp").hidden = false;
 // Cinco servicios de ejemplo, con su precio como se cobra en la calle.
 [["Instalación de piso laminado (42 m2)", "1", "756.00"],
  ["Nivelación de contrapiso", "1", "273.00"],
- ["Puntos eléctricos nuevos", "6", "45.00"],
+ ["Puntos eléctricos nuevos", "6", "270.00"],
  ["Cableado y canalización", "1", "200.00"],
  ["Retiro de material sobrante", "1", "80.00"]]
   .forEach(([d, c, p]) => agregarFila(d, c, p));
@@ -342,14 +340,12 @@ function construirPDF(d) {
     ops.push(rect(MARGEN, y - 5, W_PAG - 2 * MARGEN, 18, AZUL));
     ops.push(texto(80, y, "CANT.", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
     ops.push(texto(94, y, "SERVICIO", 8, {negrita: true, color: [1,1,1]}));
-    ops.push(texto(470, y, "PRECIO", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
     ops.push(texto(W_PAG - MARGEN, y, "IMPORTE", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
 
     y -= 22;
     for (const f of grupo) {
       ops.push(texto(80, y, String(f.cant), 9.5, {alinear: "derecha"}));
       ops.push(texto(94, y, recortar(f.desc, 360, 9.5), 9.5));
-      ops.push(texto(470, y, money(f.precio), 9.5, {alinear: "derecha"}));
       ops.push(texto(W_PAG - MARGEN, y, money(f.importe), 9.5, {alinear: "derecha"}));
       ops.push(linea(MARGEN, y - 5, W_PAG - MARGEN, y - 5, CLARO, 0.4));
       y -= 18;
@@ -425,7 +421,7 @@ function construirPDF(d) {
 
 function descargarPDF() {
   const filas = leer();
-  if (!filas.length) { alert("Agrega al menos una partida con nombre y precio."); return; }
+  if (!filas.length) { alert("Agrega al menos un servicio con nombre e importe."); return; }
 
   const total = filas.reduce((s, f) => s + f.importe, 0);
   const hoy = new Date();
