@@ -314,7 +314,7 @@ function linea(x1, y1, x2, y2, color, grosor = 0.5) {
 }
 
 function construirPDF(d) {
-  const FILAS = 20;
+  const FILAS = 18;
   const paginas = [];
   for (let i = 0; i < d.filas.length; i += FILAS) paginas.push(d.filas.slice(i, i + FILAS));
   if (!paginas.length) paginas.push([]);
@@ -323,32 +323,32 @@ function construirPDF(d) {
     const ultima = idx === paginas.length - 1;
     const ops = [];
     ops.push(rect(0, H_PAG - 72, W_PAG, 72, AZUL));
-    ops.push(texto(MARGEN, H_PAG - 44, d.negocio, 17, {negrita: true, color: [1,1,1]}));
-    ops.push(texto(W_PAG - MARGEN, H_PAG - 40, "PRESUPUESTO N° " + d.numero, 9,
+    ops.push(texto(MARGEN, H_PAG - 44, d.negocio, 18, {negrita: true, color: [1,1,1]}));
+    ops.push(texto(W_PAG - MARGEN, H_PAG - 40, "PRESUPUESTO N° " + d.numero, 10,
                    {color: [1,1,1], alinear: "derecha"}));
-    ops.push(texto(W_PAG - MARGEN, H_PAG - 54, d.fecha, 9,
+    ops.push(texto(W_PAG - MARGEN, H_PAG - 54, d.fecha, 10,
                    {color: [0.8,0.85,0.9], alinear: "derecha"}));
 
     let y = H_PAG - 96;
-    ops.push(texto(MARGEN, y, "CLIENTE", 7, {color: GRIS, negrita: true}));
-    ops.push(texto(W_PAG / 2, y, "TRABAJO", 7, {color: GRIS, negrita: true}));
+    ops.push(texto(MARGEN, y, "CLIENTE", 8, {color: GRIS, negrita: true}));
+    ops.push(texto(W_PAG / 2, y, "TRABAJO", 8, {color: GRIS, negrita: true}));
     y -= 13;
-    ops.push(texto(MARGEN, y, recortar(d.cliente || "", 240, 9.5), 9.5));
-    ops.push(texto(W_PAG / 2, y, recortar(d.trabajo || "", 240, 9.5), 9.5));
+    ops.push(texto(MARGEN, y, recortar(d.cliente || "", 230, 11), 11));
+    ops.push(texto(W_PAG / 2, y, recortar(d.trabajo || "", 230, 11), 11));
 
     y -= 22;
     ops.push(rect(MARGEN, y - 5, W_PAG - 2 * MARGEN, 18, AZUL));
-    ops.push(texto(80, y, "CANT.", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
-    ops.push(texto(94, y, "SERVICIO", 8, {negrita: true, color: [1,1,1]}));
-    ops.push(texto(W_PAG - MARGEN, y, "IMPORTE", 8, {negrita: true, color: [1,1,1], alinear: "derecha"}));
+    ops.push(texto(80, y, "CANT.", 9, {negrita: true, color: [1,1,1], alinear: "derecha"}));
+    ops.push(texto(94, y, "SERVICIO", 9, {negrita: true, color: [1,1,1]}));
+    ops.push(texto(W_PAG - MARGEN, y, "IMPORTE", 9, {negrita: true, color: [1,1,1], alinear: "derecha"}));
 
     y -= 22;
     for (const f of grupo) {
-      ops.push(texto(80, y, String(f.cant), 9.5, {alinear: "derecha"}));
-      ops.push(texto(94, y, recortar(f.desc, 360, 9.5), 9.5));
-      ops.push(texto(W_PAG - MARGEN, y, money(f.importe), 9.5, {alinear: "derecha"}));
+      ops.push(texto(80, y, String(f.cant), 11, {alinear: "derecha"}));
+      ops.push(texto(94, y, recortar(f.desc, 330, 11), 11));
+      ops.push(texto(W_PAG - MARGEN, y, money(f.importe), 11, {alinear: "derecha"}));
       ops.push(linea(MARGEN, y - 5, W_PAG - MARGEN, y - 5, CLARO, 0.4));
-      y -= 18;
+      y -= 21;
     }
 
     if (ultima) {
@@ -357,26 +357,26 @@ function construirPDF(d) {
       const sub = conIGV ? total / 1.18 : total;
       y -= 10;
       if (conIGV) {
-        ops.push(texto(470, y, "Subtotal", 9.5, {color: GRIS, alinear: "derecha"}));
-        ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(sub), 9.5, {color: GRIS, alinear: "derecha"}));
+        ops.push(texto(470, y, "Subtotal", 10.5, {color: GRIS, alinear: "derecha"}));
+        ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(sub), 10.5, {color: GRIS, alinear: "derecha"}));
         y -= 14;
-        ops.push(texto(470, y, "IGV 18%", 9.5, {color: GRIS, alinear: "derecha"}));
-        ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(total - sub), 9.5, {color: GRIS, alinear: "derecha"}));
+        ops.push(texto(470, y, "IGV 18%", 10.5, {color: GRIS, alinear: "derecha"}));
+        ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(total - sub), 10.5, {color: GRIS, alinear: "derecha"}));
         y -= 8;
       }
       ops.push(linea(330, y + 2, W_PAG - MARGEN, y + 2, AZUL, 1.2));
-      y -= 18;
-      ops.push(texto(470, y, "TOTAL", 11, {negrita: true, color: AZUL, alinear: "derecha"}));
-      ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(total), 12.5,
+      y -= 21;
+      ops.push(texto(470, y, "TOTAL", 12, {negrita: true, color: AZUL, alinear: "derecha"}));
+      ops.push(texto(W_PAG - MARGEN, y, "S/ " + money(total), 14,
                      {negrita: true, color: AZUL, alinear: "derecha"}));
 
       if (d.condiciones) {
         y -= 34;
-        ops.push(texto(MARGEN, y, "CONDICIONES", 7, {color: GRIS, negrita: true}));
-        y -= 12;
-        for (const l of envolver(d.condiciones, W_PAG - 2 * MARGEN, 9)) {
-          ops.push(texto(MARGEN, y, l, 9, {color: [0.24,0.29,0.36]}));
-          y -= 11.5;
+        ops.push(texto(MARGEN, y, "CONDICIONES", 8, {color: GRIS, negrita: true}));
+        y -= 13;
+        for (const l of envolver(d.condiciones, W_PAG - 2 * MARGEN, 10)) {
+          ops.push(texto(MARGEN, y, l, 10, {color: [0.24,0.29,0.36]}));
+          y -= 12.5;
         }
       }
     }
